@@ -9,6 +9,10 @@ current `main`; both experiment arms omit it identically.
 isolated completion-verification treatment. Both pin release digest
 `dbc158c7c4f27c0297ec06c21de7e82e78d2f89ca1d7d13d19c4a5531bad93fd`.
 
+The current evaluation snapshot explicitly uses the temporary public release mirror at
+`cm2435-hcomp/frontier-skills` because the implementation account cannot create the intended organization repository.
+The runtime's production default remains `hcompai/frontier-skills`; remove the override after transfer or mirroring.
+
 The run command must keep the OSW-2 dataset, task list, scheduler, retry policy, and both `wandb` and
 `save_evaluation` callbacks identical between arms. Known environment, evaluator, and serving failures remain in raw
 counts but are excluded from the skill-effect denominator.
