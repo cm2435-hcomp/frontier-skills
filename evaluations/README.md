@@ -20,3 +20,5 @@ counts but are excluded from the skill-effect denominator.
 `run_osw2_ablation.sh` launches an exact matched pair for the isolated completion gate, combined audited slice, or
 full suite. It deliberately has no `all` mode: inspect each phase's evidence before spending on the next one. Export
 `HAI_API_KEY`, `WANDB_API_KEY`, and `OSWORLD_V2_TASK_CLASS_DIR`; the script fails before submission when any is absent.
+The launcher pins the accepted web and GitLab dependency receipts from the reference run so the full task inventory
+does not silently change between arms.

@@ -46,6 +46,7 @@ launch() {
       "task_suite.env.asset_bundle_s3_uri=$asset_uri" \
       "task_suite.env.asset_bundle_sha256=$asset_sha" \
       task_suite.env.instance_type=t3.xlarge \
+      'task_suite.accepted_dependency_receipts=[osworld-v2-web-2026.06.24,osworld-v2-gitlab-2026.06.24]' \
       "$task_override" \
       agent=sagent_threaded \
       agent.enable_trace_writer=true \
