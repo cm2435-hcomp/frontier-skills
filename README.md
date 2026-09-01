@@ -16,3 +16,5 @@ uv run python scripts/build_release.py --output dist/release
 Skills must describe their real runtime requirements in `compatibility`. A package may guide browser or desktop
 actions, but its scripts always run in the agent's configured shell. Do not imply shared cookies, processes, or files
 unless the runtime topology proves that boundary.
+
+Task evidence, compatibility decisions, and runtime probe receipts live under `audits/`.
