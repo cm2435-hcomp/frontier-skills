@@ -16,3 +16,7 @@ The runtime's production default remains `hcompai/frontier-skills`; remove the o
 The run command must keep the OSW-2 dataset, task list, scheduler, retry policy, and both `wandb` and
 `save_evaluation` callbacks identical between arms. Known environment, evaluator, and serving failures remain in raw
 counts but are excluded from the skill-effect denominator.
+
+`run_osw2_ablation.sh` launches an exact matched pair for the isolated completion gate, combined audited slice, or
+full suite. It deliberately has no `all` mode: inspect each phase's evidence before spending on the next one. Export
+`HAI_API_KEY`, `WANDB_API_KEY`, and `OSWORLD_V2_TASK_CLASS_DIR`; the script fails before submission when any is absent.
