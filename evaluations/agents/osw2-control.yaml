@@ -1,0 +1,268 @@
+agent:
+  _target_: sagent.lib.agents.forest.forest.Forest
+  callbacks:
+  - _target_: sagent.lib.callbacks.Compactor
+    max_action_arg_chars: 300
+    max_briefing_paths: 30
+    passthrough_actions: 10
+    passthrough_arg_paths: true
+    passthrough_images: 3
+    skill:
+      _target_: sagent.lib.skills.interface.ChatMapperSkill
+      chat_mapper:
+        _target_: sagent.lib.skills.memory_summarizer.chat_mapper.MemorySummarizerChatMapper
+        events_mapper:
+          _target_: sagent.core.events.mappers.EvaluationEventMapperRegistry
+          event_transforms:
+          - _target_: sagent.core.events.transforms.ObservationWindowTransform
+            keep_last: 3
+            keep_last_images: 3
+        prompt_path: lib/skills/memory_summarizer/prompts/compactor-2026-08-13.j2
+      llm:
+        _target_: hai_adapters.llm.LanguageModel
+        base_request:
+          _target_: hai_protocols.base.BaseRequest
+          max_completion_tokens: 16384
+          reasoning_effort: disabled
+          temperature: 0.6
+        chat_provider:
+          _target_: hai_adapters.chat_provider_builder.build_chat_provider
+          name: qwen3-8-27b-28
+        default_timeout: 600
+    trigger_tokens: 200000
+  max_images: 3
+  max_steps: 500
+  max_time_s: 21600
+  name: OSWorldV2HybridEval
+  policy_chat_mapper:
+    _target_: sagent.lib.policy_chat_mappers.tool_calling.ToolCallingChatMapper
+    coerce_tool_args: true
+    coordinate_system: 0-1000
+    events_mapper:
+      _target_: sagent.core.events.mappers.ToolCallingEventMapperRegistry
+      overrides:
+      - _target_: sagent.core.events.mappers.ObservationEventMapper
+        cursor_size: 40
+    force_answer_content_fallback: true
+    force_answer_tool_choice: false
+    prompt_path: lib/agents/forest/prompts/holo3_5/osworld_v2/tool_calling.j2
+    terminate_on_no_tool_call: false
+    tool_choice: auto
+  policy_llm:
+    _target_: hai_adapters.llm.LanguageModel
+    base_request:
+      _target_: hai_protocols.base.BaseRequest
+      max_completion_tokens: 16384
+      preserve_thinking: true
+      reasoning_effort: medium
+      temperature: 0.8
+    chat_provider:
+      _target_: hai_adapters.chat_provider_builder.build_chat_provider
+      name: qwen3-8-27b-28
+    default_timeout: 300
+  services:
+    captioner:
+      _target_: sagent.lib.skills.interface.ChatMapperSkill
+      chat_mapper:
+        _target_: sagent.lib.skills.captioner.chat_mapper.CaptionerChatMapper
+        instruction: null
+        prompt_path: lib/skills/captioner/prompts/holo_ocr-2026-08-29.j2
+      llm:
+        _target_: hai_adapters.llm.LanguageModel
+        base_request:
+          _target_: hai_protocols.base.BaseRequest
+          max_completion_tokens: 16384
+          reasoning_effort: disabled
+          temperature: 0
+        chat_provider:
+          _target_: hai_adapters.chat_provider_builder.build_chat_provider
+          name: qwen3-8-27b-28
+        default_timeout: 300
+    desktop:
+      _target_: hai_drivers.desktop.remote.driver.RemoteDesktopDriver
+      server_url: ''
+    sandbox:
+      _target_: hai_drivers.code_sandbox.remote.driver.RemoteCodeSandbox
+      server_url: ''
+    stt:
+      _target_: sagent.lib.services.stt.WhisperSpeechToText
+  tools:
+  - _target_: sagent.lib.tools.planning.UpdatePlan
+  - _target_: sagent.lib.tools.desktop.WriteDesktop
+    wait_after_s: 1
+  - _target_: sagent.lib.tools.desktop.ClickDesktop
+    wait_after_s: 1
+  - _target_: sagent.lib.tools.desktop.DoubleClickDesktop
+    wait_after_s: 1
+  - _target_: sagent.lib.tools.desktop.WriteAtDesktop
+    wait_after_s: 1
+  - _target_: sagent.lib.tools.desktop.ScrollDesktop
+    wait_after_s: 1
+  - _target_: sagent.lib.tools.desktop.MoveToDesktop
+    wait_after_s: 1
+  - _target_: sagent.lib.tools.desktop.DragToDesktop
+    wait_after_s: 1
+  - _target_: sagent.lib.tools.desktop.DragAndDropHoldKeyDesktop
+    wait_after_s: 1
+  - _target_: sagent.lib.tools.desktop.KeyDownDesktop
+    wait_after_s: 1
+  - _target_: sagent.lib.tools.desktop.KeyUpDesktop
+    wait_after_s: 1
+  - _target_: sagent.lib.tools.desktop.HotkeyDesktop
+    wait_after_s: 1
+  - _target_: sagent.lib.tools.desktop.HoldAndTapKeyDesktop
+    wait_after_s: 1
+  - _target_: sagent.lib.tools.desktop.MouseDownDesktop
+    wait_after_s: 1
+  - _target_: sagent.lib.tools.desktop.MouseUpDesktop
+    wait_after_s: 1
+  - _target_: sagent.lib.tools.desktop.WaitDesktop
+  - _target_: sagent.lib.tools.desktop.ZoomDesktop
+  - _target_: sagent.lib.tools.sandbox.SubmitCommand
+  - _target_: sagent.lib.tools.sandbox.PollExecution
+  - _target_: sagent.lib.tools.sandbox.SendExecutionInput
+  - _target_: sagent.lib.tools.sandbox.TerminateExecution
+  - _target_: sagent.lib.tools.sandbox.ReadFile
+  - _target_: sagent.lib.tools.sandbox.WriteFile
+  - _target_: sagent.lib.tools.sandbox.SearchReplace
+  - _target_: sagent.lib.tools.sandbox.ViewImage
+  - _target_: sagent.lib.tools.ocr.DocumentOcr
+  - _target_: sagent.lib.tools.audio.TranscribeAudio
+  - _target_: sagent.lib.tools.communication.Answer
+captioner:
+  _target_: sagent.lib.skills.interface.ChatMapperSkill
+  chat_mapper:
+    _target_: sagent.lib.skills.captioner.chat_mapper.CaptionerChatMapper
+    instruction: null
+    prompt_path: lib/skills/captioner/prompts/holo_ocr-2026-08-29.j2
+  llm:
+    _target_: hai_adapters.llm.LanguageModel
+    base_request:
+      _target_: hai_protocols.base.BaseRequest
+      max_completion_tokens: 16384
+      reasoning_effort: disabled
+      temperature: 0
+    chat_provider:
+      _target_: hai_adapters.chat_provider_builder.build_chat_provider
+      name: qwen3-8-27b-28
+    default_timeout: 300
+chat_mapper:
+  _target_: sagent.lib.policy_chat_mappers.tool_calling.ToolCallingChatMapper
+  coerce_tool_args: true
+  coordinate_system: 0-1000
+  events_mapper:
+    _target_: sagent.core.events.mappers.ToolCallingEventMapperRegistry
+    overrides:
+    - _target_: sagent.core.events.mappers.ObservationEventMapper
+      cursor_size: 40
+  force_answer_content_fallback: true
+  force_answer_tool_choice: false
+  prompt_path: lib/agents/forest/prompts/holo3_5/osworld_v2/tool_calling.j2
+  terminate_on_no_tool_call: false
+  tool_choice: auto
+compactor:
+  _target_: sagent.lib.callbacks.Compactor
+  max_action_arg_chars: 300
+  max_briefing_paths: 30
+  passthrough_actions: 10
+  passthrough_arg_paths: true
+  passthrough_images: 3
+  skill:
+    _target_: sagent.lib.skills.interface.ChatMapperSkill
+    chat_mapper:
+      _target_: sagent.lib.skills.memory_summarizer.chat_mapper.MemorySummarizerChatMapper
+      events_mapper:
+        _target_: sagent.core.events.mappers.EvaluationEventMapperRegistry
+        event_transforms:
+        - _target_: sagent.core.events.transforms.ObservationWindowTransform
+          keep_last: 3
+          keep_last_images: 3
+      prompt_path: lib/skills/memory_summarizer/prompts/compactor-2026-08-13.j2
+    llm:
+      _target_: hai_adapters.llm.LanguageModel
+      base_request:
+        _target_: hai_protocols.base.BaseRequest
+        max_completion_tokens: 16384
+        reasoning_effort: disabled
+        temperature: 0.6
+      chat_provider:
+        _target_: hai_adapters.chat_provider_builder.build_chat_provider
+        name: qwen3-8-27b-28
+      default_timeout: 600
+  trigger_tokens: 200000
+compactor_llm_timeout: 600
+compactor_max_completion_tokens: 16384
+compactor_trigger_tokens: 200000
+desktop:
+  _target_: hai_drivers.desktop.remote.driver.RemoteDesktopDriver
+  server_url: ''
+llm:
+  _target_: hai_adapters.llm.LanguageModel
+  base_request:
+    _target_: hai_protocols.base.BaseRequest
+    max_completion_tokens: 16384
+    preserve_thinking: true
+    reasoning_effort: medium
+    temperature: 0.8
+  chat_provider:
+    _target_: hai_adapters.chat_provider_builder.build_chat_provider
+    name: qwen3-8-27b-28
+  default_timeout: 300
+max_completion_tokens: 16384
+max_images: 3
+max_steps: 500
+max_time_s: 21600
+model_name: qwen3-8-27b-28
+policy_llm_timeout: 300
+sandbox:
+  _target_: hai_drivers.code_sandbox.remote.driver.RemoteCodeSandbox
+  server_url: ''
+stt:
+  _target_: sagent.lib.services.stt.WhisperSpeechToText
+tools:
+- _target_: sagent.lib.tools.planning.UpdatePlan
+- _target_: sagent.lib.tools.desktop.WriteDesktop
+  wait_after_s: 1
+- _target_: sagent.lib.tools.desktop.ClickDesktop
+  wait_after_s: 1
+- _target_: sagent.lib.tools.desktop.DoubleClickDesktop
+  wait_after_s: 1
+- _target_: sagent.lib.tools.desktop.WriteAtDesktop
+  wait_after_s: 1
+- _target_: sagent.lib.tools.desktop.ScrollDesktop
+  wait_after_s: 1
+- _target_: sagent.lib.tools.desktop.MoveToDesktop
+  wait_after_s: 1
+- _target_: sagent.lib.tools.desktop.DragToDesktop
+  wait_after_s: 1
+- _target_: sagent.lib.tools.desktop.DragAndDropHoldKeyDesktop
+  wait_after_s: 1
+- _target_: sagent.lib.tools.desktop.KeyDownDesktop
+  wait_after_s: 1
+- _target_: sagent.lib.tools.desktop.KeyUpDesktop
+  wait_after_s: 1
+- _target_: sagent.lib.tools.desktop.HotkeyDesktop
+  wait_after_s: 1
+- _target_: sagent.lib.tools.desktop.HoldAndTapKeyDesktop
+  wait_after_s: 1
+- _target_: sagent.lib.tools.desktop.MouseDownDesktop
+  wait_after_s: 1
+- _target_: sagent.lib.tools.desktop.MouseUpDesktop
+  wait_after_s: 1
+- _target_: sagent.lib.tools.desktop.WaitDesktop
+- _target_: sagent.lib.tools.desktop.ZoomDesktop
+- _target_: sagent.lib.tools.sandbox.SubmitCommand
+- _target_: sagent.lib.tools.sandbox.PollExecution
+- _target_: sagent.lib.tools.sandbox.SendExecutionInput
+- _target_: sagent.lib.tools.sandbox.TerminateExecution
+- _target_: sagent.lib.tools.sandbox.ReadFile
+- _target_: sagent.lib.tools.sandbox.WriteFile
+- _target_: sagent.lib.tools.sandbox.SearchReplace
+- _target_: sagent.lib.tools.sandbox.ViewImage
+- _target_: sagent.lib.tools.ocr.DocumentOcr
+- _target_: sagent.lib.tools.audio.TranscribeAudio
+- _target_: sagent.lib.tools.communication.Answer
+wait_after_s: 1
+skill_runtime:
+  shell_authority: attached_sandbox
+  deployment_profile: disposable_desktop_benchmark
