@@ -7,7 +7,7 @@ if [[ "$phase" != "completion" && "$phase" != "combined" && "$phase" != "full" ]
   exit 2
 fi
 
-for name in HAI_API_KEY WANDB_API_KEY OSWORLD_V2_TASK_CLASS_DIR; do
+for name in HAI_API_KEY OPENAI_API_KEY WANDB_API_KEY OSWORLD_V2_TASK_CLASS_DIR; do
   if [[ -z "${!name:-}" ]]; then
     echo "$name must be exported before launching OSW-2 through Sky" >&2
     exit 2
