@@ -1,16 +1,31 @@
 schema_version: 1
 source: h/frontier-skills
-revision: 2026-09-01.1
+revision: 2026-09-03.1
 skills:
-  - name: completion-verification
-    description: Check every acceptance criterion through the final consumer surface before claiming completion.
-    modes: [desktop, browser]
-    path: skills/completion-verification
-    provenance: {repository: hcompai/frontier-skills, license: H-owned original}
-  - name: office-artifact-surgery
-    description: Make narrow office-document edits while preserving application-native structure and verifying the saved artifact.
+  - name: libreoffice-impress
+    description: Inspect, edit, and verify LibreOffice Impress presentations without losing native structure.
     modes: [desktop]
-    path: skills/office-artifact-surgery
+    path: skills/libreoffice-impress
+    provenance: {repository: hcompai/frontier-skills, license: H-owned original}
+  - name: libreoffice-calc
+    description: Create and verify real LibreOffice Calc formulas, charts, formatting rules, and pivot tables.
+    modes: [desktop]
+    path: skills/libreoffice-calc
+    provenance: {repository: hcompai/frontier-skills, license: H-owned original}
+  - name: libreoffice-writer
+    description: Make exact LibreOffice Writer transformations while preserving untouched text and structure.
+    modes: [desktop]
+    path: skills/libreoffice-writer
+    provenance: {repository: hcompai/frontier-skills, license: H-owned original}
+  - name: thunderbird-desktop
+    description: Inspect and change Thunderbird preferences, profiles, mailboxes, and exports through supported surfaces.
+    modes: [desktop]
+    path: skills/thunderbird-desktop
+    provenance: {repository: hcompai/frontier-skills, license: H-owned original}
+  - name: vscode-desktop
+    description: Configure and verify VS Code keybindings, settings, extensions, and debugger-visible state.
+    modes: [desktop]
+    path: skills/vscode-desktop
     provenance: {repository: hcompai/frontier-skills, license: H-owned original}
   - name: safe-live-database-inspection
     description: Inspect application-owned SQLite state safely without bypassing the supported write surface.

@@ -22,8 +22,9 @@ def test_release_build_is_deterministic_and_complete(tmp_path: Path) -> None:
     descriptor = json.loads(first_descriptor.read_text())
     assert descriptor["release_sha256"] == hashlib.sha256(first_archive.read_bytes()).hexdigest()
     assert {entry["name"] for entry in descriptor["skills"]} >= {
-        "completion-verification",
-        "office-artifact-surgery",
-        "safe-live-database-inspection",
-        "visual-batch-inspection",
+        "libreoffice-calc",
+        "libreoffice-impress",
+        "libreoffice-writer",
+        "thunderbird-desktop",
+        "vscode-desktop",
     }
