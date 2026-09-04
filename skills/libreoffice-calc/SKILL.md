@@ -38,5 +38,9 @@ If Calc already has the workbook open, save and close it before a programmatic e
 Calc, recalculate it, and save before finishing. Application-created pivots, fields, and formulas may not materialise
 until Calc updates them.
 
+If LibreOffice is force-stopped, dismiss Document Recovery on relaunch before opening the target. A recovery copy is
+not evidence that the requested file was saved. In the GUI, write into an empty cell without overwrite mode so Calc
+does not open the delete-confirmation dialog.
+
 Verify sheet and row counts before inspecting individual values. Check formulas and displayed results separately. A
 valid ZIP or successful library save does not prove that Calc retained the requested object.

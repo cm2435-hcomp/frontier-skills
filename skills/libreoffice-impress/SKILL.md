@@ -31,6 +31,9 @@ Named colors refer to LibreOffice's installed palette, not CSS names. Read the c
 Text typed through LibreOffice AutoCorrect may use typographic quotes. Inspect a nearby run or the saved XML instead
 of normalising apostrophes or whitespace.
 
+If LibreOffice is force-stopped, dismiss Document Recovery on relaunch before opening the target. A recovery copy is
+not evidence that the requested file was saved.
+
 ## Edit and hand back
 
 If Impress already has the deck open, save and close it before a programmatic edit. Reopen the edited file in Impress

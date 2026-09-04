@@ -26,5 +26,9 @@ Use direct document or XML editing only when it can preserve the untouched struc
 is not structure-preserving. If conversion is required and the task does not name another converter, use LibreOffice
 and inspect the converted result in Writer.
 
+Text typed through LibreOffice AutoCorrect may use typographic quotes. Inspect the saved document rather than
+normalising apostrophes or whitespace. If LibreOffice is force-stopped, dismiss Document Recovery on relaunch before
+opening the target.
+
 Verify the transformed range, one adjacent unchanged range, paragraph count, and exact whitespace from the saved
 document. A successful save or a visually similar PDF is not evidence that the Writer structure is correct.

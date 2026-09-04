@@ -1,6 +1,6 @@
 schema_version: 1
 source: h/frontier-skills
-revision: 2026-09-03.1
+revision: 2026-09-04.1
 skills:
   - name: libreoffice-impress
     description: Inspect, edit, and verify LibreOffice Impress presentations without losing native structure.
@@ -26,6 +26,21 @@ skills:
     description: Configure and verify VS Code keybindings, settings, extensions, and debugger-visible state.
     modes: [desktop]
     path: skills/vscode-desktop
+    provenance: {repository: hcompai/frontier-skills, license: H-owned original}
+  - name: chrome-desktop
+    description: Operate and verify the existing Chrome session, profile state, URLs, and browser preferences.
+    modes: [desktop]
+    path: skills/chrome-desktop
+    provenance: {repository: hcompai/frontier-skills, license: H-owned original}
+  - name: vlc-desktop
+    description: Load media into the existing VLC instance and verify its durable playback state.
+    modes: [desktop]
+    path: skills/vlc-desktop
+    provenance: {repository: hcompai/frontier-skills, license: H-owned original}
+  - name: gnome-desktop
+    description: Change GNOME desktop settings only when the required device and visible state exist.
+    modes: [desktop]
+    path: skills/gnome-desktop
     provenance: {repository: hcompai/frontier-skills, license: H-owned original}
   - name: safe-live-database-inspection
     description: Inspect application-owned SQLite state safely without bypassing the supported write surface.
