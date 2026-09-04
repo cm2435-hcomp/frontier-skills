@@ -1,6 +1,22 @@
 schema_version: 1
-revision: 2026-09-04.0
+revision: 2026-09-04.1
 skills:
+  - name: libreoffice-impress
+    modes: [desktop]
+  - name: libreoffice-calc
+    modes: [desktop]
+  - name: libreoffice-writer
+    modes: [desktop]
+  - name: thunderbird-desktop
+    modes: [desktop]
+  - name: vscode-desktop
+    modes: [desktop]
+  - name: chrome-desktop
+    modes: [desktop]
+  - name: vlc-desktop
+    modes: [desktop]
+  - name: gnome-desktop
+    modes: [desktop]
   - name: safe-live-database-inspection
     modes: [desktop]
   - name: visual-batch-inspection

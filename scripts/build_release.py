@@ -25,7 +25,7 @@ def build_release(output: Path) -> tuple[Path, Path]:
         package_path = f"skills/{entry['name']}"
         package = ROOT / package_path
         file_entries: list[dict] = []
-        for file_path in sorted(path for path in package.rglob("*") if path.is_file()):
+        for file_path in sorted(path for path in package.rglob("*") if _is_package_file(path)):
             relative = file_path.relative_to(package).as_posix()
             content = file_path.read_bytes()
             executable = bool(file_path.stat().st_mode & 0o111)
@@ -64,6 +64,10 @@ def build_release(output: Path) -> tuple[Path, Path]:
     archive_path = output / "release.tar.gz"
     archive_path.write_bytes(_archive_bytes(archive_files))
     return descriptor_path, archive_path
+
+
+def _is_package_file(path: Path) -> bool:
+    return path.is_file() and "__pycache__" not in path.parts and path.suffix != ".pyc"
 
 
 def _archive_bytes(files: list[tuple[str, bytes, bool]]) -> bytes:
