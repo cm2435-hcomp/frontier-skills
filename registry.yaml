@@ -1,6 +1,6 @@
 schema_version: 1
 source: h/frontier-skills
-revision: 2026-09-01.1
+revision: 2026-09-04.0
 skills:
   - name: completion-verification
     description: Check every acceptance criterion through the final consumer surface before claiming completion.

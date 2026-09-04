@@ -4,10 +4,8 @@ from __future__ import annotations
 
 import argparse
 import gzip
-import hashlib
 import io
 import json
-import subprocess
 import tarfile
 from pathlib import Path
 
@@ -16,10 +14,9 @@ import frontmatter
 from validate_registry import ROOT, load_registry, validate_registry
 
 
-def build_release(output: Path, *, provenance_commit: str | None = None) -> tuple[Path, Path]:
+def build_release(output: Path) -> tuple[Path, Path]:
     entries = validate_registry()
     registry = load_registry()
-    commit = provenance_commit or _git_commit()
     release_skills: list[dict] = []
     archive_files: list[tuple[str, bytes, bool]] = []
     for entry in entries:
@@ -32,7 +29,6 @@ def build_release(output: Path, *, provenance_commit: str | None = None) -> tupl
             file_entries.append(
                 {
                     "path": relative,
-                    "sha256": hashlib.sha256(content).hexdigest(),
                     "size": len(content),
                     "executable": executable,
                 }
@@ -46,35 +42,25 @@ def build_release(output: Path, *, provenance_commit: str | None = None) -> tupl
                 "compatibility": post.metadata.get("compatibility"),
                 "modes": entry["modes"],
                 "path": entry["path"],
-                "sha256": package_sha256(file_entries),
                 "files": file_entries,
             }
         )
 
-    output.mkdir(parents=True, exist_ok=True)
-    archive_path = output / "release.tar.gz"
-    archive_bytes = _archive_bytes(archive_files)
-    archive_path.write_bytes(archive_bytes)
     descriptor = {
-        "schema_version": 1,
+        "schema_version": 2,
         "source": registry["source"],
         "revision": registry["revision"],
-        "release_sha256": hashlib.sha256(archive_bytes).hexdigest(),
-        "provenance": {"repository": "hcompai/frontier-skills", "commit": commit},
         "skills": release_skills,
     }
+    descriptor_bytes = (json.dumps(descriptor, indent=2, sort_keys=True) + "\n").encode()
+    archive_files.append(("release.json", descriptor_bytes, False))
+
+    output.mkdir(parents=True, exist_ok=True)
     descriptor_path = output / "release.json"
-    descriptor_path.write_text(json.dumps(descriptor, indent=2, sort_keys=True) + "\n")
+    descriptor_path.write_bytes(descriptor_bytes)
+    archive_path = output / "release.tar.gz"
+    archive_path.write_bytes(_archive_bytes(archive_files))
     return descriptor_path, archive_path
-
-
-def package_sha256(files: list[dict]) -> str:
-    digest = hashlib.sha256()
-    for item in sorted(files, key=lambda value: value["path"]):
-        digest.update(
-            f"{item['path']}\0{item['sha256']}\0{item['size']}\0{int(item['executable'])}\n".encode()
-        )
-    return digest.hexdigest()
 
 
 def _archive_bytes(files: list[tuple[str, bytes, bool]]) -> bytes:
@@ -92,17 +78,6 @@ def _archive_bytes(files: list[tuple[str, bytes, bool]]) -> bytes:
                 info.gname = ""
                 archive.addfile(info, io.BytesIO(content))
     return buffer.getvalue()
-
-
-def _git_commit() -> str:
-    result = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    return result.stdout.strip()
 
 
 def main() -> None:
