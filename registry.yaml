@@ -1,74 +1,27 @@
 schema_version: 1
-source: h/frontier-skills
 revision: 2026-09-04.0
 skills:
-  - name: completion-verification
-    description: Check every acceptance criterion through the final consumer surface before claiming completion.
-    modes: [desktop, browser]
-    path: skills/completion-verification
-    provenance: {repository: hcompai/frontier-skills, license: H-owned original}
-  - name: office-artifact-surgery
-    description: Make narrow office-document edits while preserving application-native structure and verifying the saved artifact.
-    modes: [desktop]
-    path: skills/office-artifact-surgery
-    provenance: {repository: hcompai/frontier-skills, license: H-owned original}
   - name: safe-live-database-inspection
-    description: Inspect application-owned SQLite state safely without bypassing the supported write surface.
     modes: [desktop]
-    path: skills/safe-live-database-inspection
-    provenance: {repository: hcompai/frontier-skills, license: H-owned original}
   - name: visual-batch-inspection
-    description: Inspect long videos efficiently with bounded frame sampling and contact sheets before detailed review.
     modes: [desktop]
-    path: skills/visual-batch-inspection
-    provenance: {repository: hcompai/frontier-skills, license: H-owned original}
   - name: web-airbnb
-    description: Planning stays on Airbnb — use the wishlist, don't book.
     modes: [browser]
-    path: skills/web-airbnb
-    provenance: {repository: hcompai/hai, source_path: sagent/src/sagent/lib/agent_skills/web/web-airbnb, license: H-owned}
   - name: web-booking
-    description: Planning stays on Booking.com — save to a list, don't book.
     modes: [browser]
-    path: skills/web-booking
-    provenance: {repository: hcompai/hai, source_path: sagent/src/sagent/lib/agent_skills/web/web-booking, license: H-owned}
   - name: web-gmail
-    description: Drafting emails in Gmail (web UI).
     modes: [browser]
-    path: skills/web-gmail
-    provenance: {repository: hcompai/hai, source_path: sagent/src/sagent/lib/agent_skills/web/web-gmail, license: H-owned}
   - name: web-google-calendar
-    description: Viewing events on Google Calendar (web UI).
     modes: [browser]
-    path: skills/web-google-calendar
-    provenance: {repository: hcompai/hai, source_path: sagent/src/sagent/lib/agent_skills/web/web-google-calendar, license: H-owned}
   - name: web-google-flights
-    description: Searching flights on Google Flights.
     modes: [browser]
-    path: skills/web-google-flights
-    provenance: {repository: hcompai/hai, source_path: sagent/src/sagent/lib/agent_skills/web/web-google-flights, license: H-owned}
   - name: web-google-reserve
-    description: Booking on Google Reserve.
     modes: [browser]
-    path: skills/web-google-reserve
-    provenance: {repository: hcompai/hai, source_path: sagent/src/sagent/lib/agent_skills/web/web-google-reserve, license: H-owned}
   - name: web-google-sheets
-    description: Using cells in Google Sheets (web UI).
     modes: [browser]
-    path: skills/web-google-sheets
-    provenance: {repository: hcompai/hai, source_path: sagent/src/sagent/lib/agent_skills/web/web-google-sheets, license: H-owned}
   - name: web-leboncoin
-    description: Scrolling on Leboncoin — use the sidebar, watch French terms.
     modes: [browser]
-    path: skills/web-leboncoin
-    provenance: {repository: hcompai/hai, source_path: sagent/src/sagent/lib/agent_skills/web/web-leboncoin, license: H-owned}
   - name: web-seloger
-    description: Scrolling on SeLoger — scroll the modal, not the page.
     modes: [browser]
-    path: skills/web-seloger
-    provenance: {repository: hcompai/hai, source_path: sagent/src/sagent/lib/agent_skills/web/web-seloger, license: H-owned}
   - name: web-whatsapp
-    description: Messaging on WhatsApp Web — draft only, never send.
     modes: [browser]
-    path: skills/web-whatsapp
-    provenance: {repository: hcompai/hai, source_path: sagent/src/sagent/lib/agent_skills/web/web-whatsapp, license: H-owned}

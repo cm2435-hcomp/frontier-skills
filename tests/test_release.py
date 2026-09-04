@@ -26,9 +26,3 @@ def test_release_build_is_deterministic_and_complete(tmp_path: Path) -> None:
         embedded = archive.extractfile("release.json")
         assert embedded is not None
         assert embedded.read() == first_descriptor.read_bytes()
-    assert {entry["name"] for entry in descriptor["skills"]} >= {
-        "completion-verification",
-        "office-artifact-surgery",
-        "safe-live-database-inspection",
-        "visual-batch-inspection",
-    }

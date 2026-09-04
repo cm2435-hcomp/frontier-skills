@@ -13,6 +13,8 @@ import frontmatter
 
 from validate_registry import ROOT, load_registry, validate_registry
 
+RELEASE_SOURCE = "h/frontier-skills"
+
 
 def build_release(output: Path) -> tuple[Path, Path]:
     entries = validate_registry()
@@ -20,7 +22,8 @@ def build_release(output: Path) -> tuple[Path, Path]:
     release_skills: list[dict] = []
     archive_files: list[tuple[str, bytes, bool]] = []
     for entry in entries:
-        package = ROOT / entry["path"]
+        package_path = f"skills/{entry['name']}"
+        package = ROOT / package_path
         file_entries: list[dict] = []
         for file_path in sorted(path for path in package.rglob("*") if path.is_file()):
             relative = file_path.relative_to(package).as_posix()
@@ -33,22 +36,22 @@ def build_release(output: Path) -> tuple[Path, Path]:
                     "executable": executable,
                 }
             )
-            archive_files.append((f"{entry['path']}/{relative}", content, executable))
+            archive_files.append((f"{package_path}/{relative}", content, executable))
         post = frontmatter.load(package / "SKILL.md")
         release_skills.append(
             {
                 "name": entry["name"],
-                "description": entry["description"],
+                "description": post.metadata["description"],
                 "compatibility": post.metadata.get("compatibility"),
                 "modes": entry["modes"],
-                "path": entry["path"],
+                "path": package_path,
                 "files": file_entries,
             }
         )
 
     descriptor = {
         "schema_version": 2,
-        "source": registry["source"],
+        "source": RELEASE_SOURCE,
         "revision": registry["revision"],
         "skills": release_skills,
     }
