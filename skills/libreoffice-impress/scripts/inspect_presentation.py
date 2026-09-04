@@ -36,15 +36,29 @@ def _rels(package: zipfile.ZipFile, owner: str) -> dict[str, tuple[str, str]]:
     return result
 
 
+def _properties(props: ET.Element | None) -> dict[str, object] | None:
+    if props is None:
+        return None
+    output: dict[str, object] = {"properties": dict(sorted(props.attrib.items()))}
+    colour = props.find("a:solidFill/a:srgbClr", NS)
+    if colour is not None:
+        output["color"] = colour.attrib.get("val")
+    link = props.find("a:hlinkClick", NS)
+    if link is not None:
+        output["hyperlink"] = link.attrib.get(RID)
+    return output
+
+
+RUN_TAGS = (f"{{{NS['a']}}}r", f"{{{NS['a']}}}fld")
+
+
 def _run(run: ET.Element, max_text: int) -> dict[str, object]:
-    props = run.find("a:rPr", NS)
+    """A text run or a field run (slide number, date); both carry `a:rPr`."""
     text = "".join(node.text or "" for node in run.findall("a:t", NS))[:max_text]
-    output: dict[str, object] = {"text": text}
-    if props is not None:
-        output["properties"] = dict(sorted(props.attrib.items()))
-        colour = props.find("a:solidFill/a:srgbClr", NS)
-        if colour is not None:
-            output["color"] = colour.attrib.get("val")
+    output: dict[str, object] = {"text": text, "whitespace_only": text.strip() == ""}
+    if run.tag.endswith("}fld"):
+        output["field"] = run.attrib.get("type")
+    output.update(_properties(run.find("a:rPr", NS)) or {})
     return output
 
 
@@ -58,7 +72,7 @@ def _paragraph(paragraph: ET.Element, max_text: int) -> dict[str, object]:
         )
         if bullet_node is not None:
             bullet = {"type": bullet_node.tag.rsplit("}", 1)[-1], **bullet_node.attrib}
-    runs = [_run(run, max_text) for run in paragraph.findall("a:r", NS)]
+    runs = [_run(run, max_text) for run in paragraph if run.tag in RUN_TAGS]
     return {
         "text": "".join(node.text or "" for node in paragraph.findall(".//a:t", NS))[
             :max_text
@@ -66,12 +80,22 @@ def _paragraph(paragraph: ET.Element, max_text: int) -> dict[str, object]:
         "level": None if props is None else props.attrib.get("lvl", "0"),
         "bullet": bullet,
         "runs": runs,
+        "line_breaks": len(paragraph.findall("a:br", NS)),
+        "end_paragraph_properties": _properties(paragraph.find("a:endParaRPr", NS)),
     }
 
 
 def _shape(shape: ET.Element, max_text: int) -> dict[str, object]:
+    kind = shape.tag.rsplit("}", 1)[-1]
     identity = shape.find("p:nvSpPr/p:cNvPr", NS)
+    if identity is None:
+        identity = shape.find("p:nvPicPr/p:cNvPr", NS)
     placeholder = shape.find("p:nvSpPr/p:nvPr/p:ph", NS)
+    if placeholder is None:
+        placeholder = shape.find("p:nvPicPr/p:nvPr/p:ph", NS)
+    blip = shape.find("p:blipFill/a:blip", NS)
+    if blip is None:
+        blip = shape.find("p:spPr/a:blipFill/a:blip", NS)
     transform = shape.find("p:spPr/a:xfrm", NS)
     geometry = None
     if transform is not None:
@@ -86,14 +110,46 @@ def _shape(shape: ET.Element, max_text: int) -> dict[str, object]:
     return {
         "id": None if identity is None else identity.attrib.get("id"),
         "name": None if identity is None else identity.attrib.get("name"),
+        "kind": kind,
         "placeholder": None
         if placeholder is None
         else placeholder.attrib.get("type", "body"),
+        "picture": blip is not None,
+        "image_rid": None if blip is None else blip.attrib.get(f"{{{NS['r']}}}embed"),
         "geometry_emu": geometry,
         "paragraphs": [
             _paragraph(p, max_text) for p in shape.findall("p:txBody/a:p", NS)
         ],
     }
+
+
+def _shapes(root: ET.Element, max_text: int) -> list[dict[str, object]]:
+    """Every text shape and picture in document order, including those nested in groups."""
+    return [
+        _shape(node, max_text)
+        for node in root.iter()
+        if node.tag in (f"{{{NS['p']}}}sp", f"{{{NS['p']}}}pic")
+    ]
+
+
+FIELD_PLACEHOLDERS = ("sldNum", "dt", "ftr")
+
+
+def _master_fields(
+    package: zipfile.ZipFile,
+    presentation: ET.Element,
+    relationships: dict[str, tuple[str, str]],
+    max_text: int,
+) -> list[dict[str, object]]:
+    """Slide number, date, and footer placeholders on each master; slides inherit their formatting."""
+    reports = []
+    for node in presentation.findall("p:sldMasterIdLst/p:sldMasterId", NS):
+        master_path = relationships[node.attrib[RID]][0]
+        master = ET.fromstring(package.read(master_path))
+        for shape in _shapes(master, max_text):
+            if shape["placeholder"] in FIELD_PLACEHOLDERS:
+                reports.append({"master": master_path, **shape})
+    return reports
 
 
 def inspect(path: Path, selected_slides: set[int], max_text: int) -> dict[str, object]:
@@ -105,6 +161,7 @@ def inspect(path: Path, selected_slides: set[int], max_text: int) -> dict[str, o
             relationships[node.attrib[RID]][0]
             for node in presentation.findall("p:sldIdLst/p:sldId", NS)
         ]
+        master_fields = _master_fields(package, presentation, relationships, max_text)
         slides = []
         for number, slide_path in enumerate(slide_paths, 1):
             if selected_slides and number not in selected_slides:
@@ -126,13 +183,17 @@ def inspect(path: Path, selected_slides: set[int], max_text: int) -> dict[str, o
                 {
                     "number": number,
                     "path": slide_path,
-                    "shapes": [
-                        _shape(shape, max_text) for shape in root.findall(".//p:sp", NS)
-                    ],
+                    "shapes": _shapes(root, max_text),
                     "notes": notes,
+                    "notes_slide": notes_paths[0] if notes_paths else None,
                 }
             )
-    return {"path": str(path), "slide_count": len(slide_paths), "slides": slides}
+    return {
+        "path": str(path),
+        "slide_count": len(slide_paths),
+        "master_field_placeholders": master_fields,
+        "slides": slides,
+    }
 
 
 def main() -> None:

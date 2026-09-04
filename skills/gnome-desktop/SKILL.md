@@ -18,3 +18,17 @@ own reporting contract.
 
 Use GNOME's supported settings UI when provenance matters. If a direct settings command is allowed, read the value
 back from the same schema and confirm the desktop reflects it before finishing.
+
+## Exact locations
+
+- GNOME Terminal profiles are UUIDs. List them with `gsettings get org.gnome.Terminal.ProfilesList list`, then write
+  under `org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:<uuid>/`. The path `:default/` is
+  not a profile. Check a window size change by opening a new terminal and running `stty size`.
+- "Default application for videos" means every MIME type in the category, not a hand-typed list. Take the set from
+  the application's `.desktop` `MimeType=` line and `/usr/share/mime/video`, run `xdg-mime default` over all of it,
+  and confirm with `xdg-mime query default` on the same set. Settings > Default Applications > Video does the same
+  through the UI.
+- When counting or summarising files in a project tree, exclude dependency directories such as `node_modules` unless
+  the task includes them.
+- A user created inside an SSH `ChrootDirectory` jail also needs its `/etc/passwd` home directory to exist on the
+  host, or `su -` and host logins fail.

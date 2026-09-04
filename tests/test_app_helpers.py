@@ -51,6 +51,88 @@ def test_impress_inspector_walks_grouped_text_and_run_properties(
     assert shape["paragraphs"][0]["runs"][0]["properties"]["strike"] == "sngStrike"
 
 
+def test_impress_inspector_reports_pictures_end_para_links_notes_and_master_fields(
+    tmp_path: Path,
+) -> None:
+    inspector = _load("skills/libreoffice-impress/scripts/inspect_presentation.py")
+    deck = tmp_path / "deck.pptx"
+    p_ns = "http://schemas.openxmlformats.org/presentationml/2006/main"
+    a_ns = "http://schemas.openxmlformats.org/drawingml/2006/main"
+    r_ns = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    rel_ns = "http://schemas.openxmlformats.org/package/2006/relationships"
+    with zipfile.ZipFile(deck, "w") as package:
+        package.writestr(
+            "ppt/presentation.xml",
+            f'<p:presentation xmlns:p="{p_ns}" xmlns:r="{r_ns}">'
+            '<p:sldMasterIdLst><p:sldMasterId id="2147483648" r:id="rId2"/></p:sldMasterIdLst>'
+            '<p:sldIdLst><p:sldId id="256" r:id="rId1"/></p:sldIdLst></p:presentation>',
+        )
+        package.writestr(
+            "ppt/_rels/presentation.xml.rels",
+            f'<Relationships xmlns="{rel_ns}">'
+            '<Relationship Id="rId1" Type="slide" Target="slides/slide1.xml"/>'
+            '<Relationship Id="rId2" Type="slideMaster" Target="slideMasters/slideMaster1.xml"/></Relationships>',
+        )
+        package.writestr(
+            "ppt/slideMasters/slideMaster1.xml",
+            f'<p:sldMaster xmlns:p="{p_ns}" xmlns:a="{a_ns}"><p:cSld><p:spTree><p:sp>'
+            '<p:nvSpPr><p:cNvPr id="4" name="Slide Number Placeholder"/><p:cNvSpPr/>'
+            '<p:nvPr><p:ph type="sldNum"/></p:nvPr></p:nvSpPr><p:spPr/><p:txBody><a:p><a:fld type="slidenum">'
+            '<a:rPr><a:solidFill><a:srgbClr val="FF0000"/></a:solidFill></a:rPr><a:t>1</a:t></a:fld>'
+            "</a:p></p:txBody></p:sp></p:spTree></p:cSld></p:sldMaster>",
+        )
+        package.writestr(
+            "ppt/slides/_rels/slide1.xml.rels",
+            f'<Relationships xmlns="{rel_ns}">'
+            '<Relationship Id="rId9" Type="http://x/notesSlide" Target="../notesSlides/notesSlide1.xml"/>'
+            "</Relationships>",
+        )
+        package.writestr(
+            "ppt/notesSlides/notesSlide1.xml",
+            f'<p:notes xmlns:p="{p_ns}" xmlns:a="{a_ns}"><p:cSld><p:spTree><p:sp><p:txBody><a:p><a:r>'
+            "<a:t>speaker note</a:t></a:r></a:p></p:txBody></p:sp></p:spTree></p:cSld></p:notes>",
+        )
+        package.writestr(
+            "ppt/slides/slide1.xml",
+            f'<p:sld xmlns:p="{p_ns}" xmlns:a="{a_ns}" xmlns:r="{r_ns}"><p:cSld><p:spTree>'
+            # a cropped photo stored as a blip-filled shape, not a p:pic
+            '<p:sp><p:nvSpPr><p:cNvPr id="5" name="Cropped Photo"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr>'
+            '<p:spPr><a:blipFill><a:blip r:embed="rId3"/></a:blipFill></p:spPr></p:sp>'
+            # a true picture element
+            '<p:pic><p:nvPicPr><p:cNvPr id="6" name="Icon"/><p:cNvPicPr/><p:nvPr/></p:nvPicPr>'
+            '<p:blipFill><a:blip r:embed="rId4"/></p:blipFill><p:spPr/></p:pic>'
+            # text with a whitespace-only run, a hyperlink, a line break, and end-paragraph properties
+            '<p:sp><p:nvSpPr><p:cNvPr id="7" name="Body"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr/>'
+            '<p:txBody><a:p><a:r><a:rPr u="sng"><a:hlinkClick r:id="rId5"/></a:rPr><a:t>Ref</a:t></a:r>'
+            '<a:r><a:rPr/><a:t> </a:t></a:r><a:br/><a:r><a:rPr u="sng"/><a:t>more</a:t></a:r>'
+            '<a:endParaRPr u="sng"/></a:p></p:txBody></p:sp>'
+            "</p:spTree></p:cSld></p:sld>",
+        )
+
+    report = inspector.inspect(deck, set(), 200)
+
+    slide = report["slides"][0]
+    by_name = {shape["name"]: shape for shape in slide["shapes"]}
+    assert by_name["Cropped Photo"]["picture"] is True
+    assert by_name["Cropped Photo"]["kind"] == "sp"
+    assert by_name["Icon"]["picture"] is True
+    assert by_name["Icon"]["kind"] == "pic"
+    assert by_name["Icon"]["image_rid"] == "rId4"
+    assert by_name["Body"]["picture"] is False
+    paragraph = by_name["Body"]["paragraphs"][0]
+    assert paragraph["runs"][0]["hyperlink"] == "rId5"
+    assert paragraph["runs"][1]["whitespace_only"] is True
+    assert paragraph["line_breaks"] == 1
+    assert paragraph["end_paragraph_properties"]["properties"] == {"u": "sng"}
+    assert slide["notes"] == ["speaker note"]
+    assert slide["notes_slide"] == "ppt/notesSlides/notesSlide1.xml"
+    master = report["master_field_placeholders"][0]
+    assert master["placeholder"] == "sldNum"
+    field_run = master["paragraphs"][0]["runs"][0]
+    assert field_run["field"] == "slidenum"
+    assert field_run["color"] == "FF0000"
+
+
 def test_calc_inspector_reports_formula_format_chart_and_pivot(tmp_path: Path) -> None:
     inspector = _load("skills/libreoffice-calc/scripts/inspect_workbook.py")
     workbook = tmp_path / "book.xlsx"

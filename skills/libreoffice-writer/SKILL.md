@@ -26,6 +26,19 @@ Use direct document or XML editing only when it can preserve the untouched struc
 is not structure-preserving. If conversion is required and the task does not name another converter, use LibreOffice
 and inspect the converted result in Writer.
 
+## Paragraphs and breaks in `.docx`
+
+A Writer document is read as a sequence of paragraphs. When building one from extracted text:
+
+- `\n` inside a `python-docx` run becomes a soft line break (`w:br`), not a new paragraph. Split on newlines and add
+  one paragraph per line. "Each item a new paragraph, separated by a new line" means an empty paragraph between items.
+- `python-pptx` returns a slide line break (`a:br`) as `\x0b`. Map it to a paragraph or line break; deleting it fuses
+  the words on either side. Skip or flag `a:fld` field runs whose text is a placeholder such as `<number>`.
+- `soffice --headless --convert-to docx` from markdown or HTML drops bold runs and heading styles. Build the document
+  with explicit paragraph styles and run formatting, or open the source in Writer and save from there.
+- Verify by printing every paragraph's text with `repr()` and checking the paragraph count, blank separators, styles,
+  and bold runs against the source. Matching visible text is not enough.
+
 Text typed through LibreOffice AutoCorrect may use typographic quotes. Inspect the saved document rather than
 normalising apostrophes or whitespace. If LibreOffice is force-stopped, dismiss Document Recovery on relaunch before
 opening the target.

@@ -1,5 +1,5 @@
 schema_version: 1
-revision: 2026-09-04.1
+revision: 2026-09-04.2
 skills:
   - name: libreoffice-impress
     modes: [desktop]
@@ -16,6 +16,10 @@ skills:
   - name: vlc-desktop
     modes: [desktop]
   - name: gnome-desktop
+    modes: [desktop]
+  - name: gimp-desktop
+    modes: [desktop]
+  - name: wps-office
     modes: [desktop]
   - name: safe-live-database-inspection
     modes: [desktop]
