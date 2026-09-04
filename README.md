@@ -28,7 +28,7 @@ execution modes, package path, and provenance:
 ```yaml
 schema_version: 1
 source: h/frontier-skills
-revision: 2026-09-04.1
+revision: 2026-09-04.0
 skills:
   - name: libreoffice-impress
     description: Inspect, edit, and verify LibreOffice Impress presentations without losing native structure.
@@ -95,8 +95,8 @@ uv run python scripts/build_release.py --output dist/release
 
 The producer emits:
 
-- `release.json`, containing release identity, provenance, package hashes, and every declared file; and
-- `release.tar.gz`, containing only those regular files.
+- `release.tar.gz`, containing its authenticated `release.json` manifest and every declared package file; and
+- a detached copy of `release.json` for human inspection. The runtime ignores this copy.
 
 Build the same revision twice before publishing and require identical digests. Never replace assets under an existing
 revision. A content change requires a new revision and digest.
@@ -107,8 +107,8 @@ HAI selects packages by pinned revision, digest, modes, includes, and excludes. 
 copies only the selected packages into `<workspace>/.agents/skills`, writes `CATALOG.md`, and advertises the resulting
 `SKILL.md` paths to the model. The model reads and executes packages with its existing shell and filesystem tools.
 
-The runtime fails closed on an invalid manifest, mismatched digest or file, unsafe path, unmatched filter, empty
-selection, or changed installation. It does not fall back to a moving branch or an unverified local copy.
+The runtime fails closed on an invalid manifest, mismatched archive digest, unsafe path, unmatched filter, empty
+selection, or existing installation. It does not fall back to a moving branch or an unverified local copy.
 
 ## Evidence and rollout
 
