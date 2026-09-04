@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 
 import frontmatter
 import yaml
@@ -21,37 +21,33 @@ def load_registry() -> dict:
 
 def validate_registry() -> list[dict]:
     registry = load_registry()
-    if registry.get("schema_version") != 1 or registry.get("source") != "h/frontier-skills":
-        raise ValueError("registry identity must be schema 1 and source h/frontier-skills")
+    if registry.get("schema_version") != 1:
+        raise ValueError("registry schema must be 1")
+    if not isinstance(registry.get("revision"), str) or not registry["revision"]:
+        raise ValueError("registry revision must be a non-empty string")
     skills = registry.get("skills")
     if not isinstance(skills, list) or not skills:
         raise ValueError("registry.skills must be a non-empty list")
     names: set[str] = set()
-    paths: set[str] = set()
     for entry in skills:
+        if not isinstance(entry, dict) or set(entry) != {"name", "modes"}:
+            raise ValueError("each registry skill must contain only name and modes")
         name = entry.get("name")
-        path = entry.get("path")
         if not isinstance(name, str) or NAME_PATTERN.fullmatch(name) is None:
             raise ValueError(f"invalid skill name: {name!r}")
         if name in names:
             raise ValueError(f"duplicate skill name: {name}")
         names.add(name)
-        if not isinstance(path, str) or not path.startswith("skills/"):
-            raise ValueError(f"{name}: path must live under skills/")
-        parsed = PurePosixPath(path)
-        if parsed.is_absolute() or ".." in parsed.parts or str(parsed) != path or path in paths:
-            raise ValueError(f"{name}: unsafe or duplicate path {path!r}")
-        paths.add(path)
         modes = entry.get("modes")
         if not isinstance(modes, list) or not modes or set(modes) - {"desktop", "browser"}:
             raise ValueError(f"{name}: modes must be a non-empty desktop/browser subset")
-        package = ROOT / path
+        package = ROOT / "skills" / name
         skill_md = package / "SKILL.md"
         if not skill_md.is_file():
             raise ValueError(f"{name}: missing {skill_md.relative_to(ROOT)}")
         post = frontmatter.load(skill_md)
-        if post.metadata.get("name") != name or post.metadata.get("description") != entry.get("description"):
-            raise ValueError(f"{name}: registry and SKILL.md frontmatter disagree")
+        if post.metadata.get("name") != name or not post.metadata.get("description"):
+            raise ValueError(f"{name}: SKILL.md must declare its matching name and a description")
         if not post.content.strip():
             raise ValueError(f"{name}: SKILL.md body is empty")
         for file_path in package.rglob("*"):

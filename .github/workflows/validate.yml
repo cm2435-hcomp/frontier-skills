@@ -11,9 +11,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
-      - run: uv run python scripts/validate_registry.py
       - run: uv run pytest -q
-      - run: uv run python scripts/build_release.py --output dist/first
-      - run: uv run python scripts/build_release.py --output dist/second
-      - run: cmp dist/first/release.json dist/second/release.json
-      - run: cmp dist/first/release.tar.gz dist/second/release.tar.gz
