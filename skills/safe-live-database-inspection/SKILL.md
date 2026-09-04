@@ -6,7 +6,10 @@ compatibility: Requires Python 3 with sqlite3 and filesystem access to the same 
 
 Use SQLite from the shell for inspection, not as an unsupported mutation path.
 
-1. Locate the database used by the running application and check for `-wal` and `-shm` companions.
+1. Locate the database used by the running application and check for `-journal`, `-wal`, and `-shm` companions. Never
+   delete them: they hold committed or in-flight state that the application replays on its next open. If the
+   application was killed and left a journal, relaunch it and let it recover, or snapshot with the backup API; do
+   not strip the recovery files and hand the application a bare main file.
 2. Create a consistent snapshot with SQLite's backup API before querying. Do not copy only the main file while the app
    is live; that can omit committed WAL state or produce inconsistent evidence.
 3. Open the snapshot read-only, inspect the schema first, and make bounded queries that select only fields needed for

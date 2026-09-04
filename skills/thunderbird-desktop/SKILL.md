@@ -19,6 +19,9 @@ inspector redacts every string preference and never reads message bodies.
   `mail.imap.use_status_for_biff = false`; creating a periodic filter is a different behavior.
 - The account wizard supports IMAP and POP3 incoming servers. A hand-written account block in `prefs.js` is not proof
   that Thunderbird loaded the account.
+- Every mail account has an incoming server; the wizard cannot create a send-only account, and disabling message
+  checks does not remove the incoming server from the account. A request for an outgoing-only account is structurally
+  infeasible and should be reported under the runtime's infeasible reporting contract.
 
 ## Mailboxes and exports
 

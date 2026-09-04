@@ -32,6 +32,17 @@ instead of jumping directly from source to destination.
 When the task asks for Calc's produced layout, preserve its generated labels and ordering, including `Count - FIELD`,
 ascending labels, `Total Result`, and the blank row between blocks where present.
 
+## Roll-forward and version-bound features
+
+A "next period" or "roll-forward" workbook is a copy of the prior one with its data ranges moved, not a rebuild. Copy
+the file, then edit in place so external links (`=[N]Sheet!$A$1` references to other workbooks), charts, conditional
+formats, and names survive. A workbook rebuilt from values loses all of them.
+
+Check `soffice --version` before using a feature with a minimum version. Sparklines need 7.4 (Insert > Sparkline);
+on 7.3 there is no menu item, no UNO object, and `x14:sparklineGroups` injected into the file is stripped on the next
+save. Three structural absences mean the feature does not exist in this build; report that under the runtime's
+infeasible reporting contract rather than hand-authoring XML.
+
 ## Edit and hand back
 
 If Calc already has the workbook open, save and close it before a programmatic edit. Reopen the edited workbook in
